@@ -325,38 +325,44 @@ class HdfsLogger : public Logger {
 
 // open a file for sequential reading
 Status HdfsEnv::NewSequentialFile(const std::string& fname,
-                                 SequentialFile** result) {
+                                  unique_ptr<SequentialFile>* result,
+				  const EnvOptions& options) {
   HdfsReadableFile* f = new HdfsReadableFile(fileSys_, fname);
   if (f == nullptr) {
     *result = nullptr;
     return IOError(fname, errno);
   }
-  *result = dynamic_cast<SequentialFile*>(f);
+  std::unique_ptr<SequentialFile> ptr (dynamic_cast<SequentialFile*>(f));
+  result = &ptr;
   return Status::OK();
 }
 
 // open a file for random reading
 Status HdfsEnv::NewRandomAccessFile(const std::string& fname,
-                                   RandomAccessFile** result) {
+                                   unique_ptr<RandomAccessFile>* result,
+				   const EnvOptions& options) {
   HdfsReadableFile* f = new HdfsReadableFile(fileSys_, fname);
   if (f == nullptr) {
     *result = nullptr;
     return IOError(fname, errno);
   }
-  *result = dynamic_cast<RandomAccessFile*>(f);
+  std::unique_ptr<RandomAccessFile> ptr (dynamic_cast<RandomAccessFile*>(f));
+  result = &ptr; 
   return Status::OK();
 }
 
 // create a new file for writing
 Status HdfsEnv::NewWritableFile(const std::string& fname,
-                               WritableFile** result) {
+                               unique_ptr<WritableFile>* result,
+			       const EnvOptions& options) {
   Status s;
   HdfsWritableFile* f = new HdfsWritableFile(fileSys_, fname);
   if (f == nullptr || !f->isValid()) {
     *result = nullptr;
     return IOError(fname, errno);
   }
-  *result = dynamic_cast<WritableFile*>(f);
+  std::unique_ptr<WritableFile> ptr (dynamic_cast<WritableFile*>(f));
+  result = &ptr;
   return Status::OK();
 }
 
@@ -490,7 +496,8 @@ Status HdfsEnv::NewLogger(const std::string& fname,
     return IOError(fname, errno);
   }
   HdfsLogger* h = new HdfsLogger(f, &HdfsEnv::gettid);
-  *result = h;
+  shared_ptr<Logger> log (dynamic_cast<Logger*>(h));
+  result = &log;
   if (mylog == nullptr) {
     // mylog = h; // uncomment this for detailed logging
   }

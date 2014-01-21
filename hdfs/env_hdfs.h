@@ -58,13 +58,16 @@ class HdfsEnv : public Env {
   }
 
   virtual Status NewSequentialFile(const std::string& fname,
-                                   SequentialFile** result);
+                                   unique_ptr<SequentialFile>* result,
+				   const EnvOptions& options);
 
   virtual Status NewRandomAccessFile(const std::string& fname,
-                                     RandomAccessFile** result);
+                                     unique_ptr<RandomAccessFile>* result,
+				     const EnvOptions& options);
 
   virtual Status NewWritableFile(const std::string& fname,
-                                 WritableFile** result);
+                                 unique_ptr<WritableFile>* result,
+ 				 const EnvOptions& options);
 
   virtual Status NewRandomRWFile(const std::string& fname,
                                  unique_ptr<RandomRWFile>* result,
@@ -94,7 +97,7 @@ class HdfsEnv : public Env {
 
   virtual Status UnlockFile(FileLock* lock);
 
-  virtual Status NewLogger(const std::string& fname, Logger** result);
+  virtual Status NewLogger(const std::string& fname, shared_ptr<Logger>* result);
 
   virtual void Schedule(void (*function)(void* arg), void* arg,
                         Priority pri = LOW) {

@@ -260,10 +260,14 @@ if test "$USE_HDFS"; then
     echo "JAVA_HOME has to be set for HDFS usage."
     exit 1
   fi
+  NO_ARCHIVE_FLAG="-Wl,--no-whole-archive"
+  if [ "$TARGET_OS" = "Darwin" ]; then
+	NO_ARCHIVE_FLAG=""
+  fi 
   HDFS_CCFLAGS="$HDFS_CCFLAGS -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -DUSE_HDFS"
-  HDFS_LDFLAGS="$HDFS_LDFLAGS -Wl,--no-whole-archive hdfs/libhdfs.a -L$JAVA_HOME/jre/lib/amd64"
+  HDFS_LDFLAGS="$HDFS_LDFLAGS $NO_ARCHIVE_FLAG hdfs/libhdfs.a -L$JAVA_HOME/jre/lib/amd64"
   HDFS_LDFLAGS="$HDFS_LDFLAGS -L$JAVA_HOME/jre/lib/amd64/server -L$GLIBC_RUNTIME_PATH/lib"
-  HDFS_LDFLAGS="$HDFS_LDFLAGS -ldl -lverify -ljava -ljvm"
+  HDFS_LDFLAGS="$HDFS_LDFLAGS -ldl"
   COMMON_FLAGS="$COMMON_FLAGS $HDFS_CCFLAGS"
   PLATFORM_LDFLAGS="$PLATFORM_LDFLAGS $HDFS_LDFLAGS"
 fi
